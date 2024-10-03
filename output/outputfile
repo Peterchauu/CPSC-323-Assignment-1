@@ -1,0 +1,9 @@
+token               Lexeme              
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Keyword             while               
+seperator           (                   
+Identifier          fahr                
+operator            <=                  
+seperator           )                   
+Identifier          a                   
+operator            =                   
