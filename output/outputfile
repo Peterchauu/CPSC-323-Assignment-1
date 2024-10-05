@@ -5,5 +5,7 @@ seperator           (
 Identifier          fahr                
 operator            <=                  
 seperator           )                   
+Identifier          upper               
 Identifier          a                   
 operator            =                   
+Real                23.00               
