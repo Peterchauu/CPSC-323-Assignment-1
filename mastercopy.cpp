@@ -63,7 +63,8 @@ std::vector<std::string> read_file(const std::string input_file_name) {
     return unparsed_words;
 }
 
-void write_to_file(std::ofstream text, const std::vector<token> token_list) {
+void write_to_file(const std::string output_file_name, const std::vector<token> token_list) {
+    std::ofstream text (output_file_name);
     if (text.is_open()) {
         text << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
         text << std::setw(40) << std::setfill('~') << "";
@@ -213,76 +214,13 @@ bool is_integer(std::string& word) {
     return currentState == 42;
 }
 
-bool comment_track = false;
 
-
-std::vector<token> lexer(std::string& word) {
+std::vector<token> filter_words(std::vector<std::string> word_list) {
     std::string buffer;
     token new_token;
-    std::string chr;
-    std::vector<token> token_list;
-    for (unsigned int iter = 0; iter < word.size(); iter++) {
-        chr = word[iter];
-        buffer += chr;
-        if (word.substr(iter, 2) == "[*") {
-            comment_track = true;
-        } else if (word.substr(iter, 2) == "*]") {
-            comment_track = false;
-            buffer.clear();
-            iter += 1;
-        } else if (separators.count(chr) > 0 && !comment_track) {
-            new_token.type = "seperator";
-            new_token.lexeme = chr;
-            token_list.push_back(new_token);
-            buffer.erase(iter);
-        } else if (operators.count(chr) > 0 && !comment_track) {
-            new_token.type = "operator";
-            if (operators.count(&word[iter + 1]) > 0) {
-                buffer += word[iter + 1];
-                new_token.lexeme = buffer;
-                token_list.push_back(new_token);
-                buffer.erase(iter);
-                break;
-            } else {
-                new_token.lexeme = chr;
-                token_list.push_back(new_token);
-                buffer.erase(iter);
-                break;
-            }
-        }
-    }
-    if (!comment_track && keywords.count(buffer) > 0){
-        new_token.lexeme = buffer;
-        new_token.type = "Keyword";
-        token_list.push_back(new_token);
-    } else if (!comment_track && is_identifier(buffer)) {
-        new_token.lexeme = buffer;
-        new_token.type = "Identifier";
-        token_list.push_back(new_token);
-    } else if (!comment_track && is_integer(buffer)) {
-        new_token.lexeme = buffer;
-        new_token.type = "Integer";
-        token_list.push_back(new_token); 
-    } else if (!comment_track && is_real(buffer)) {
-        new_token.lexeme = buffer;
-        new_token.type = "Real";
-        token_list.push_back(new_token);
-    } else if (!comment_track && !buffer.empty()) {
-        new_token.lexeme = buffer;
-        new_token.type = "Error";
-        token_list.push_back(new_token);
-    }
-    return token_list;
-} 
-
-
-/*std::vector<token> filter_words(std::vector<std::string> word_list) {
-    std::string buffer;
-    token new_token;
-    std::vector<token> token_list;
-    std::string chr;
     bool comment_track = false;
-
+    std::vector<token> token_list;
+    std::string chr;
 
 
     for (std::string word : word_list) {
@@ -341,7 +279,7 @@ std::vector<token> lexer(std::string& word) {
     }
     return token_list;
 
-}*/
+}
 
 int main() {
     std::string file_input;
@@ -353,29 +291,9 @@ int main() {
     std::cout << "Enter a designated file name for your token output (Press 'Enter' to skip): ";
     std::cin >> file_output;
 
-    std::ifstream input (file_input);
-    std::ofstream output (file_output);
+    std::vector<std::string> unfiltered_words = read_file(file_input);
+    std::vector<token> token_list = filter_words(unfiltered_words);
+    write_to_file(file_output, token_list);
 
-    std::string line;
-    std::string word;
-    std::vector<std::string> unparsed_words;
-    std::vector<token> token_list;
-
-    if (output.is_open()) {
-        output << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
-        output << std::setw(40) << std::setfill('~') << "";
-        output << std::setw(40) << std::setfill(' ') << std::endl;
-    }
-    while (std::getline(input, line)) {
-        
-        std::istringstream stream(line);
-        while (stream >> word) {
-            token_list = lexer(word);
-            for (token token : token_list) {
-                std::cout << "Token Type: " << token.type << " Lexeme: " << token.lexeme << std::endl;
-                output << std::setw(20) << std::left << token.type << std::setw(20) << token.lexeme << std::endl;
-            }
-        }
-    }
     return 0;
 }
