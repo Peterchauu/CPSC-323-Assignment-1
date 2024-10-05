@@ -1,4 +1,4 @@
-while (fahr <= upper) {
+while (fahr <= upper) { [*hi hi hi hi*]32.41
     if (fahr == 2) {
         return false;
     } else if (fahr == lower) {

@@ -7,6 +7,7 @@ operator            <=
 seperator           )                   
 Identifier          upper               
 seperator           {                   
+Real                32.41               
 Keyword             if                  
 seperator           (                   
 Identifier          fahr                

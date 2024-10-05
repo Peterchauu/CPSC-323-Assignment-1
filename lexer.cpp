@@ -18,17 +18,14 @@ std::set<std::string> separators = {
 };
 
 std::set<std::string> operators = { 
-    "==",
-    "!=",
+    "=",
+    "!",
     ">",
     "<",
-    "<=",
-    "=>",
     "*",
     "/",
     "+",
-    "-",
-    "="
+    "-"
 
 };
 
@@ -42,10 +39,6 @@ std::set<std::string> keywords = {
     "fi"
 };
 
-std::set<std::string> comment_lexeme = {
-    "[*",
-    "*]"
-};
 
 
 struct token {
@@ -78,7 +71,7 @@ void write_to_file(const std::string output_file_name, const std::vector<token> 
         text << std::setw(40) << std::setfill('~') << "";
         text << std::setw(40) << std::setfill(' ') << std::endl;
         for (const token& token : token_list) {
-            std::cout << "There exists token: " << token.lexeme << std::endl;
+            //std::cout << "There exists token: " << token.lexeme << std::endl;
             text << std::setw(20) << std::left << token.type << std::setw(20) << token.lexeme << std::endl;
 
         }
@@ -98,7 +91,7 @@ bool is_identifier(std::string& word) {
     int selected_char;
 
     word += "$";
-    std::cout << "Identifier: " << word << std::endl;
+    //std::cout << "Identifier: " << word << std::endl;
 
     for (const char& chr :word) {
         if (isalpha(chr)) {
@@ -127,11 +120,11 @@ bool is_identifier(std::string& word) {
             return false;
         }
     }
-    if (currentState == 42) {
+    /*if (currentState == 42) {
         std::cout << "Success for: " << word << std::endl;
     } else {
         std::cout << "Failed on : " << word << std::endl;
-    }
+    }*/
 
     word.pop_back();
     return currentState == 42;
@@ -152,7 +145,7 @@ bool is_real(std::string& word) {
     int selected_char;
 
     word += "$";
-    std::cout << "Real: " << word << std::endl;
+    //std::cout << "Real: " << word << std::endl;
     for (const char& chr :word) {
         if (chr == '0') {
             selected_char = 0;
@@ -185,11 +178,11 @@ bool is_real(std::string& word) {
             return false;
         }
     }
-    if (currentState == 42) {
+    /*if (currentState == 42) {
         std::cout << "Success for: " << word << std::endl;
     } else {
         std::cout << "Failed on : " << word << std::endl;
-    }
+    }*/
     word.pop_back();
     return currentState == 42;
 }
@@ -207,7 +200,7 @@ bool is_integer(std::string& word) {
     int currentState = 0;
     int selected_char;
     word += "$";
-    std::cout << "Integer: " << word << std::endl;
+    //std::cout << "Integer: " << word << std::endl;
 
     for (const char& chr :word) {
         if (chr == '0') {
@@ -236,11 +229,11 @@ bool is_integer(std::string& word) {
             return false;
         }
     }
-    if (currentState == 42) {
+    /*if (currentState == 42) {
         std::cout << "Success for: " << word << std::endl;
     } else {
         std::cout << "Failed on : " << word << std::endl;
-    }
+    }*/
     word.pop_back();
     return currentState == 42;
 }
@@ -260,18 +253,18 @@ std::vector<token> filter_words(std::vector<std::string> word_list) {
         for (unsigned int iter = 0; iter < word.size(); iter++) {
             chr = word[iter];
             buffer += chr;
-            std::cout << "On this letter: " << chr << std::endl;
-            if (comment_lexeme.count(chr) > 0) {
+            //std::cout << "On this letter: " << chr << " Iter: " << iter << std::endl;
+            if (word.substr(iter, 2) == "[*") {
                 comment_track = true;
-                break;
-            } else if (comment_lexeme.count(chr) > 0) {
+            } else if (word.substr(iter, 2) == "*]") {
                 comment_track = false;
-                iter += 2;
+                buffer.clear();
+                iter += 1;
             } else if (separators.count(chr) > 0 && !comment_track) {
                 new_token.type = "seperator";
                 new_token.lexeme = chr;
                 token_list.push_back(new_token);
-                std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+                //std::cout << new_token.type << " " << new_token.lexeme << std::endl;
                 buffer.erase(iter);
             } else if (operators.count(chr) > 0 && !comment_track) {
                 new_token.type = "operator";
@@ -279,38 +272,37 @@ std::vector<token> filter_words(std::vector<std::string> word_list) {
                     buffer += word[iter + 1];
                     new_token.lexeme = buffer;
                     token_list.push_back(new_token);
-                    buffer.clear();
-                    std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+                    //std::cout << new_token.type << " " << new_token.lexeme << std::endl;
                     break;
                 } else {
                     new_token.lexeme = chr;
                     token_list.push_back(new_token);
-                    std::cout << new_token.type << " " << new_token.lexeme << std::endl;
-                    buffer.clear();
+                    //std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+                    break;
                 }
             }
-        std::cout << "Buffer: " << buffer << " Chr: " << chr << " Word: " << word << std::endl;
+        //std::cout << "Buffer: " << buffer << " Chr: " << chr << " Word: " << word << " Comment: " << comment_track << std::endl;
         }
         if (!comment_track && keywords.count(buffer) > 0){
             new_token.lexeme = buffer;
             new_token.type = "Keyword";
             token_list.push_back(new_token);
-            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+            //std::cout << new_token.type << " " << new_token.lexeme << std::endl;
         } else if (!comment_track && is_identifier(buffer)) {
             new_token.lexeme = buffer;
             new_token.type = "Identifier";
             token_list.push_back(new_token);
-            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+            //std::cout << new_token.type << " " << new_token.lexeme << std::endl;
         } else if (!comment_track && is_integer(buffer)) {
             new_token.lexeme = buffer;
             new_token.type = "Integer";
             token_list.push_back(new_token); 
-            std::cout << new_token.type << " " << new_token.lexeme << std::endl;         
+            //std::cout << new_token.type << " " << new_token.lexeme << std::endl;         
         } else if (!comment_track && is_real(buffer)) {
             new_token.lexeme = buffer;
             new_token.type = "Real";
             token_list.push_back(new_token);
-            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+            //std::cout << new_token.type << " " << new_token.lexeme << std::endl;
         }
     }
     return token_list;
@@ -331,7 +323,6 @@ int main() {
     std::vector<std::string> unfiltered_words = read_file(file_input);
     std::vector<token> token_list = filter_words(unfiltered_words);
     write_to_file(file_output, token_list);
-
 
     return 0;
 }
