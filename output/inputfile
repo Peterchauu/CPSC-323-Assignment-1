@@ -1,1 +1,10 @@
-while (fahr <= upper) a = 23.00
+while (fahr <= upper) {
+    if (fahr == 2) {
+        return false;
+    } else if (fahr == lower) {
+        return true;
+    }
+    fahr = 423.2;
+    integer = 5.3;
+    return fahr / integer;
+}
