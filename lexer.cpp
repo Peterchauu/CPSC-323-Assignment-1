@@ -53,15 +53,6 @@ struct token {
     std::string lexeme;
 };
 
-//incorporate our finite state machine which returns the token and the lexeme associated with it.
-/*struct token lexer(std::string word) {
-    token* token_record;
-    if (word == "!") {
-        token_record->lexeme = word;
-        token_record->token_type = "comment";
-    }
-    return *token_record;
-};*/
 
 std::vector<std::string> read_file(const std::string input_file_name) {
     std::ifstream text (input_file_name);
@@ -78,7 +69,7 @@ std::vector<std::string> read_file(const std::string input_file_name) {
     }
     text.close();
     return unparsed_words;
-};
+}
 
 void write_to_file(const std::string output_file_name, const std::vector<token> token_list) {
     std::ofstream text (output_file_name);
@@ -87,11 +78,173 @@ void write_to_file(const std::string output_file_name, const std::vector<token> 
         text << std::setw(40) << std::setfill('~') << "";
         text << std::setw(40) << std::setfill(' ') << std::endl;
         for (const token& token : token_list) {
+            std::cout << "There exists token: " << token.lexeme << std::endl;
             text << std::setw(20) << std::left << token.type << std::setw(20) << token.lexeme << std::endl;
 
         }
     }
 }
+
+std::vector<std::vector<int>> identifier_states = {
+//  let  #   $
+    {1, -1, -1},
+    {1, 2, 42},
+    {1, 1, -1},
+
+};
+
+bool is_identifier(std::string& word) {
+    int currentState = 0;
+    int selected_char;
+
+    word += "$";
+    std::cout << "Identifier: " << word << std::endl;
+
+    for (const char& chr :word) {
+        if (isalpha(chr)) {
+            selected_char = 0;
+        } else if (isdigit(chr)) {
+            selected_char = 1;
+        } else if (chr == '$') {
+            selected_char = 2;
+        } else {
+            word.pop_back();
+            return false;
+        }
+        switch(selected_char) {
+            case 0:
+                currentState = identifier_states[currentState][selected_char];
+                break;
+            case 1:
+                currentState = identifier_states[currentState][selected_char];
+                break;
+            case 2:
+                currentState = identifier_states[currentState][selected_char];
+                break;
+        }
+        if (currentState == -1) {
+            word.pop_back();
+            return false;
+        }
+    }
+    if (currentState == 42) {
+        std::cout << "Success for: " << word << std::endl;
+    } else {
+        std::cout << "Failed on : " << word << std::endl;
+    }
+
+    word.pop_back();
+    return currentState == 42;
+}
+
+
+std::vector<std::vector<int>> real_states = {
+
+//   0 1-9 .  $
+    {1, 3, 2, -1},
+    {-1,-1,2, 42},
+    {3, 3,-1, -1},
+    {3, 3, 2, 42},
+};
+
+bool is_real(std::string& word) {
+    int currentState = 0;
+    int selected_char;
+
+    word += "$";
+    std::cout << "Real: " << word << std::endl;
+    for (const char& chr :word) {
+        if (chr == '0') {
+            selected_char = 0;
+        } else if (isdigit(chr)) {
+            selected_char = 1;
+        } else if (chr == '.') {
+            selected_char = 2;
+        } else if (chr == '$'){
+            selected_char = 3;
+        } else {
+            word.pop_back();
+            return false;
+        }
+        switch(selected_char) {
+            case 0:
+                currentState = real_states[currentState][selected_char];
+                break;
+            case 1:
+                currentState = real_states[currentState][selected_char];
+                break;
+            case 2:
+                currentState = real_states[currentState][selected_char];
+                break;
+            case 3:
+                currentState = real_states[currentState][selected_char];
+                break;
+        }
+        if (currentState == -1) {
+            word.pop_back();
+            return false;
+        }
+    }
+    if (currentState == 42) {
+        std::cout << "Success for: " << word << std::endl;
+    } else {
+        std::cout << "Failed on : " << word << std::endl;
+    }
+    word.pop_back();
+    return currentState == 42;
+}
+
+
+std::vector<std::vector<int>> integer_states = {
+
+//   0 1-9  $
+    {1, 2, -1},
+    {-1,-1, 42},
+    {2, 2, 42}
+};
+
+bool is_integer(std::string& word) {
+    int currentState = 0;
+    int selected_char;
+    word += "$";
+    std::cout << "Integer: " << word << std::endl;
+
+    for (const char& chr :word) {
+        if (chr == '0') {
+            selected_char = 0;
+        } else if (isdigit(chr)) {
+            selected_char = 1;
+        } else if (chr == '$') {
+            selected_char = 2;
+        } else {
+            word.pop_back();
+            return false;
+        }
+        switch(selected_char) {
+            case 0:
+                currentState = integer_states[currentState][selected_char];
+                break;
+            case 1:
+                currentState = integer_states[currentState][selected_char];
+                break;
+            case 2:
+                currentState = integer_states[currentState][selected_char];
+                break;
+        }
+        if (currentState == -1) {
+            word.pop_back();
+            return false;
+        }
+    }
+    if (currentState == 42) {
+        std::cout << "Success for: " << word << std::endl;
+    } else {
+        std::cout << "Failed on : " << word << std::endl;
+    }
+    word.pop_back();
+    return currentState == 42;
+}
+
 
 std::vector<token> filter_words(std::vector<std::string> word_list) {
     std::string buffer;
@@ -103,21 +256,7 @@ std::vector<token> filter_words(std::vector<std::string> word_list) {
 
 
     for (std::string word : word_list) {
-        new_token.lexeme = buffer;
-        if (!comment_track && keywords.count(buffer) > 0){
-            new_token.type = "Keyword";
-            token_list.push_back(new_token);
-            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
-            buffer.clear();
-
-        //Every other lexer type has been verified for the entire word string, could be a integer, real or identifier, implement the finite state machines here
-        } else if (!comment_track && !new_token.lexeme.empty()) {
-            buffer.append("$");
-            new_token.type = "Identifier";
-            token_list.push_back(new_token);
-            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
-            buffer.clear();
-        }
+        buffer.clear();
         for (unsigned int iter = 0; iter < word.size(); iter++) {
             chr = word[iter];
             buffer += chr;
@@ -133,7 +272,7 @@ std::vector<token> filter_words(std::vector<std::string> word_list) {
                 new_token.lexeme = chr;
                 token_list.push_back(new_token);
                 std::cout << new_token.type << " " << new_token.lexeme << std::endl;
-                buffer.clear();
+                buffer.erase(iter);
             } else if (operators.count(chr) > 0 && !comment_track) {
                 new_token.type = "operator";
                 if (operators.count(&word[iter + 1]) > 0) {
@@ -150,14 +289,33 @@ std::vector<token> filter_words(std::vector<std::string> word_list) {
                     buffer.clear();
                 }
             }
-            std::cout << "Buffer: " << buffer << " Chr: " << chr << std::endl;
-
+        std::cout << "Buffer: " << buffer << " Chr: " << chr << " Word: " << word << std::endl;
+        }
+        if (!comment_track && keywords.count(buffer) > 0){
+            new_token.lexeme = buffer;
+            new_token.type = "Keyword";
+            token_list.push_back(new_token);
+            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+        } else if (!comment_track && is_identifier(buffer)) {
+            new_token.lexeme = buffer;
+            new_token.type = "Identifier";
+            token_list.push_back(new_token);
+            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
+        } else if (!comment_track && is_integer(buffer)) {
+            new_token.lexeme = buffer;
+            new_token.type = "Integer";
+            token_list.push_back(new_token); 
+            std::cout << new_token.type << " " << new_token.lexeme << std::endl;         
+        } else if (!comment_track && is_real(buffer)) {
+            new_token.lexeme = buffer;
+            new_token.type = "Real";
+            token_list.push_back(new_token);
+            std::cout << new_token.type << " " << new_token.lexeme << std::endl;
         }
     }
     return token_list;
+
 }
-
-
 
 int main() {
     std::string file_input;
@@ -176,4 +334,4 @@ int main() {
 
 
     return 0;
-};
+}
