@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <sstream>
 
+// Declaration for all the necessary separators, operators, and keywords for the Rat24f language
+
 std::set<std::string> separators = {
     "(",
     ")",
@@ -17,14 +19,19 @@ std::set<std::string> separators = {
 };
 
 std::set<std::string> operators = { 
-    "=",
-    "!",
+    "==",
+    "!=",
     ">",
     "<",
+    "<=",
+    "=>",
+    "**",
     "*",
     "/",
     "+",
-    "-"
+    "-",
+    "=",
+    "@"
 
 };
 
@@ -35,10 +42,17 @@ std::set<std::string> keywords = {
     "return",
     "put",
     "get",
-    "fi"
+    "fi",
+    "function",
+    "integer",
+    "true",
+    "false"
 };
 
 
+
+
+// Creating a token struct to store specific token types and their respective lexeme
 
 struct token {
     std::string type;
@@ -46,7 +60,11 @@ struct token {
 };
 
 
-std::vector<std::string> read_file(const std::string input_file_name) {
+
+
+// Function for reading file and outputs a list of every word within the file separated by whitespace
+
+std::vector<std::string> read_file(const std::string& input_file_name) {
     std::ifstream text (input_file_name);
     std::string line;
     std::string word;
@@ -63,22 +81,16 @@ std::vector<std::string> read_file(const std::string input_file_name) {
     return unparsed_words;
 }
 
-void write_to_file(std::ofstream text, const std::vector<token> token_list) {
-    if (text.is_open()) {
-        text << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
-        text << std::setw(40) << std::setfill('~') << "";
-        text << std::setw(40) << std::setfill(' ') << std::endl;
-        for (const token& token : token_list) {
-            text << std::setw(20) << std::left << token.type << std::setw(20) << token.lexeme << std::endl;
 
-        }
-    }
-}
+
+
+// Implementation of Identifier FSM
 
 std::vector<std::vector<int>> identifier_states = {
+
     {1, -1, -1},
     {1, 2, 42},
-    {1, 1, -1}
+    {1, 2, -1} 
 };
 
 bool is_identifier(std::string& word) {
@@ -119,21 +131,25 @@ bool is_identifier(std::string& word) {
 }
 
 
+
+
+// Implementation of Real Numbers FSM
+
 std::vector<std::vector<int>> real_states = {
 
-//   0 1-9 .  $
     {1, 3, 2, -1},
     {-1,-1,2, 42},
-    {3, 3,-1, -1},
-    {3, 3, 2, 42},
+    {-1, -1,-1, -1},
+    {3, 3, 4, 42},
+    {4, 4,-1, 42}
 };
 
-bool is_real(std::string& word) {
+bool is_real(std::string& real) {
     int currentState = 0;
     int selected_char;
 
-    word += "$";
-    for (const char& chr :word) {
+    real += "$";
+    for (const char& chr :real) {
         if (chr == '0') {
             selected_char = 0;
         } else if (isdigit(chr)) {
@@ -143,7 +159,7 @@ bool is_real(std::string& word) {
         } else if (chr == '$'){
             selected_char = 3;
         } else {
-            word.pop_back();
+            real.pop_back();
             return false;
         }
         switch(selected_char) {
@@ -161,14 +177,18 @@ bool is_real(std::string& word) {
                 break;
         }
         if (currentState == -1) {
-            word.pop_back();
+            real.pop_back();
             return false;
         }
     }
-    word.pop_back();
+    real.pop_back();
     return currentState == 42;
 }
 
+
+
+
+// Implementation of Integer FSM
 
 std::vector<std::vector<int>> integer_states = {
     {1, 2, -1},
@@ -177,12 +197,12 @@ std::vector<std::vector<int>> integer_states = {
 
 };
 
-bool is_integer(std::string& word) {
+bool is_integer(std::string& integer) {
     int currentState = 0;
     int selected_char;
-    word += "$";
+    integer += "$";
 
-    for (const char& chr :word) {
+    for (const char& chr : integer) {
         if (chr == '0') {
             selected_char = 0;
         } else if (isdigit(chr)) {
@@ -190,7 +210,7 @@ bool is_integer(std::string& word) {
         } else if (chr == '$') {
             selected_char = 2;
         } else {
-            word.pop_back();
+            integer.pop_back();
             return false;
         }
         switch(selected_char) {
@@ -205,160 +225,118 @@ bool is_integer(std::string& word) {
                 break;
         }
         if (currentState == -1) {
-            word.pop_back();
+            integer.pop_back();
             return false;
         }
     }
-    word.pop_back();
+    integer.pop_back();
     return currentState == 42;
 }
 
 bool comment_track = false;
 
 
-std::vector<token> lexer(std::string& word) {
+
+
+// Implementation of core Lexer function, takes input of a single expression.
+
+std::vector<token> lexer(std::string& expression) {
     std::string buffer;
     token new_token;
     std::string chr;
     std::vector<token> token_list;
-    for (unsigned int iter = 0; iter < word.size(); iter++) {
-        chr = word[iter];
+    for (unsigned int iter = 0; iter < expression.size(); iter++) {
+        chr = expression[iter];
         buffer += chr;
-        if (word.substr(iter, 2) == "[*") {
+        if (expression.substr(iter, 2) == "[*") {
             comment_track = true;
-        } else if (word.substr(iter, 2) == "*]") {
+
+        } else if (expression.substr(iter, 2) == "*]") {
             comment_track = false;
+
             buffer.clear();
             iter += 1;
+
         } else if (separators.count(chr) > 0 && !comment_track) {
             new_token.type = "seperator";
             new_token.lexeme = chr;
+
             token_list.push_back(new_token);
-            buffer.erase(iter);
-        } else if (operators.count(chr) > 0 && !comment_track) {
+
+            buffer.pop_back();
+
+        } else if ((operators.count(chr) > 0 && !comment_track) || (operators.count(expression.substr(iter, 2)) > 0 && !comment_track)) {
+
             new_token.type = "operator";
-            if (operators.count(&word[iter + 1]) > 0) {
-                buffer += word[iter + 1];
+            std::cout << "This is the entire operator: " << expression.substr(iter, 2) << std::endl;
+            if (expression.length() > 1) {
+                buffer = expression.substr(iter, 2);
                 new_token.lexeme = buffer;
+
                 token_list.push_back(new_token);
-                buffer.erase(iter);
-                break;
+
+                buffer.clear();
+
+                iter += 1;
+
             } else {
                 new_token.lexeme = chr;
+
                 token_list.push_back(new_token);
-                buffer.erase(iter);
-                break;
+
+                buffer.clear();
             }
         }
     }
     if (!comment_track && keywords.count(buffer) > 0){
         new_token.lexeme = buffer;
         new_token.type = "Keyword";
+
         token_list.push_back(new_token);
+
     } else if (!comment_track && is_identifier(buffer)) {
         new_token.lexeme = buffer;
         new_token.type = "Identifier";
+
         token_list.push_back(new_token);
+
     } else if (!comment_track && is_integer(buffer)) {
         new_token.lexeme = buffer;
         new_token.type = "Integer";
+
         token_list.push_back(new_token); 
+
     } else if (!comment_track && is_real(buffer)) {
         new_token.lexeme = buffer;
         new_token.type = "Real";
+
         token_list.push_back(new_token);
+
     } else if (!comment_track && !buffer.empty()) {
         new_token.lexeme = buffer;
         new_token.type = "Error";
+
         token_list.push_back(new_token);
+        
     }
     return token_list;
 } 
-
-
-/*std::vector<token> filter_words(std::vector<std::string> word_list) {
-    std::string buffer;
-    token new_token;
-    std::vector<token> token_list;
-    std::string chr;
-    bool comment_track = false;
-
-
-
-    for (std::string word : word_list) {
-        buffer.clear();
-        for (unsigned int iter = 0; iter < word.size(); iter++) {
-            chr = word[iter];
-            buffer += chr;
-            if (word.substr(iter, 2) == "[*") {
-                comment_track = true;
-            } else if (word.substr(iter, 2) == "*]") {
-                comment_track = false;
-                buffer.clear();
-                iter += 1;
-            } else if (separators.count(chr) > 0 && !comment_track) {
-                new_token.type = "seperator";
-                new_token.lexeme = chr;
-                token_list.push_back(new_token);
-                buffer.erase(iter);
-            } else if (operators.count(chr) > 0 && !comment_track) {
-                new_token.type = "operator";
-                if (operators.count(&word[iter + 1]) > 0) {
-                    buffer += word[iter + 1];
-                    new_token.lexeme = buffer;
-                    token_list.push_back(new_token);
-                    buffer.erase(iter);
-                    break;
-                } else {
-                    new_token.lexeme = chr;
-                    token_list.push_back(new_token);
-                    buffer.erase(iter);
-                    break;
-                }
-            }
-        }
-        if (!comment_track && keywords.count(buffer) > 0){
-            new_token.lexeme = buffer;
-            new_token.type = "Keyword";
-            token_list.push_back(new_token);
-        } else if (!comment_track && is_identifier(buffer)) {
-            new_token.lexeme = buffer;
-            new_token.type = "Identifier";
-            token_list.push_back(new_token);
-        } else if (!comment_track && is_integer(buffer)) {
-            new_token.lexeme = buffer;
-            new_token.type = "Integer";
-            token_list.push_back(new_token); 
-        } else if (!comment_track && is_real(buffer)) {
-            new_token.lexeme = buffer;
-            new_token.type = "Real";
-            token_list.push_back(new_token);
-        } else if (!comment_track && !buffer.empty()) {
-            new_token.lexeme = buffer;
-            new_token.type = "Error";
-            token_list.push_back(new_token);
-        }
-    }
-    return token_list;
-
-}*/
 
 int main() {
     std::string file_input;
     std::string file_output;
 
-    std::cout << "Please enter your file name within this directory: ";
+    std::cout << "Please enter your file name within this directory (please include extension): ";
     std::cin >> file_input;
 
-    std::cout << "Enter a designated file name for your token output (Press 'Enter' to skip): ";
+    std::cout << "Name your output file for your token outputs: ";
     std::cin >> file_output;
 
     std::ifstream input (file_input);
     std::ofstream output (file_output);
 
     std::string line;
-    std::string word;
-    std::vector<std::string> unparsed_words;
+    std::string expression;
     std::vector<token> token_list;
 
     if (output.is_open()) {
@@ -369,13 +347,18 @@ int main() {
     while (std::getline(input, line)) {
         
         std::istringstream stream(line);
-        while (stream >> word) {
-            token_list = lexer(word);
+        while (stream >> expression) {
+            token_list = lexer(expression);
             for (token token : token_list) {
-                std::cout << "Token Type: " << token.type << " Lexeme: " << token.lexeme << std::endl;
-                output << std::setw(20) << std::left << token.type << std::setw(20) << token.lexeme << std::endl;
+                std::cout << std::left 
+                << "Token Type: " << std::setw(15) << token.type
+                << "Lexeme: " << token.lexeme << std::endl;
+                output << std::setw(20) << token.type << std::setw(20) << token.lexeme << std::endl;
             }
         }
     }
+    
+    std::cout << "Thank you for using our program, your token outputs have been saved to " << file_output << std::endl;
+
     return 0;
 }
