@@ -1,13 +1,4 @@
-00.000
-Asd123
-bsf456
-000000000000000
-.123
-!=
-*
-**
-@
-function
-true
-false 
-integer
+(a = b + c;)
+
+
+(a = b + c ;)

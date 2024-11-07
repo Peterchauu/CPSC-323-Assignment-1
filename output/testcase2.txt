@@ -1,0 +1,19 @@
+while (fahr > 54.91) {
+    xy87j = fahr + 78.2;
+    result = xy87j - 90;
+    status = true;
+    
+    if (result > 100) {
+        hvg5v = result + 60.5;
+        put result;
+        put hvg5v;
+        return hvg5v;
+    }
+    else {
+        hvg5v = result - 36.7;
+        put result;
+        put hvg5v;
+        status = false;
+        return hvg5v;
+    }
+}
