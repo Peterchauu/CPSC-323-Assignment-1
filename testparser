@@ -140,6 +140,9 @@ void ParamList() {
         lexer_obj.PrintAndWriteToken("<Parameter List> ::= <Parameter> | <Parameter List Prime>");
     }
 
+    Parameter();
+    ParamListPrime();
+
 }
 
 void ParamListPrime() {
@@ -147,6 +150,8 @@ void ParamListPrime() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Parameter List Prime> ::= <Parameter List> | <Empty>");
     }
+
+    ParamList();
 
 }
 
@@ -156,6 +161,9 @@ void Parameter() {
         lexer_obj.PrintAndWriteToken("<Parameter> ::= <IDs> <Qualifier>");
     }
 
+    Idents();
+    Qualifier();
+
 }
 
 void Qualifier() {
@@ -163,6 +171,18 @@ void Qualifier() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Qualifier> ::= integer | boolean | real");
     }
+
+// Kathy: This is my (poor) attempt at my comment below. I'll just leave this here in case it is needed (feel free to change it or improve it since
+// it might need it).
+/*    if (token_iter->type == "Integer") {
+        lexer_obj.PrintAndWriteToken("<Qualifier> ::= integer");
+    }
+    else if (token_iter->type == "Keyword") {
+        lexer_obj.PrintAndWriteToken("<Qualifier> ::= boolean");        
+    }
+    else {
+        lexer_obj.PrintAndWriteToken("<Qualifier> ::= real");
+    } */
 
 // Kathy: I'm not sure if me typing this might help. Printing the production rule for Qualifer might be different.
 // Maybe we use an if statement that checks whether the token type is either integer, boolean, or real
@@ -186,6 +206,8 @@ void OptDeclList() {
         lexer_obj.PrintAndWriteToken("<Opt Declaration List> ::= <Declaration List> | <Empty>");
     }
 
+    DeclList();
+
 }
 
 void DeclList() {
@@ -193,6 +215,9 @@ void DeclList() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Declaration List> ::= <Declaration>; | <Declaration List Prime>;");
     }
+
+    Declaration();
+    DeclListPrime();
 
 }
 
@@ -202,6 +227,8 @@ void DeclListPrime() {
         lexer_obj.PrintAndWriteToken("<Declaration List Prime> ::= <Declaration List> | <Empty>");
     }
 
+    DeclList();
+
 }
 
 void Declaration() {
@@ -209,6 +236,9 @@ void Declaration() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Declaration> ::= <Qualifier> <IDs>");
     }
+
+    Qualifier();
+    Idents();
 
 }
 
@@ -218,6 +248,9 @@ void Idents() {
         lexer_obj.PrintAndWriteToken("<IDs> ::= <Identifier> | <ID Prime>");
     }
 
+    Idents();
+    IdentsPrime();
+
 }
 
 void IdentsPrime() {
@@ -225,6 +258,8 @@ void IdentsPrime() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<ID Prime> ::= <IDs> | <Empty>");
     }
+
+    Idents();
 
 }
 
@@ -234,6 +269,9 @@ void StatementsList() {
         lexer_obj.PrintAndWriteToken("<Statement List> ::= <Statement> | <Statement List Prime>");
     }
 
+    Statement();
+    StatementsListPrime();
+
 }
 
 void StatementsListPrime() {
@@ -241,6 +279,8 @@ void StatementsListPrime() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Statement List Prime> ::= <Statement List> | <Empty>");
     }
+
+    StatementsList();
 
 }
 
@@ -274,6 +314,8 @@ void IfCondition() {
         lexer_obj.PrintAndWriteToken("<If> ::= if ( <Condition> )<Statement> fi | <If Prime>");
     }
 
+    IfPrime();
+
 }
 
 void IfPrime() {
@@ -289,6 +331,8 @@ void ReturnStuff() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Return> ::= return; | <Return Prime>");
     }
+
+    ReturnPrime();
 
 }
 
@@ -338,6 +382,25 @@ void Relop() {
         lexer_obj.PrintAndWriteToken("<Relop> ::= == | != | > | < | <= | =>");
     }
 
+    /* if (token_iter->lexeme == "==") {
+        lexer_obj.PrintAndWriteToken("<Relop> ::= ==)");
+    }
+    else if (token_iter->lexeme == "!=") {
+        lexer_obj.PrintAndWriteToken("<Relop> ::= !=");
+    }
+    else if (token_iter->lexeme == ">") {
+        lexer_obj.PrintAndWriteToken("<Relop> ::= >");
+    }
+    else if (token_iter->lexeme == "<") {
+        lexer_obj.PrintAndWriteToken("<Relop> ::= <");
+    }
+    else if (token_iter->lexeme == "<=") {
+        lexer_obj.PrintAndWriteToken("<Relop> ::= <=");
+    }
+    else if (token_iter->lexeme == "=>") {
+        lexer_obj.PrintAndWriteToken("<Relop> ::= =>");
+    } */
+
 }
 
 void Expression() {
@@ -345,6 +408,9 @@ void Expression() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Expression> ::= <Term><Expression Prime>");
     }
+
+    Term();
+    ExpressionPrime();
 
 }
 
@@ -354,6 +420,11 @@ void ExpressionPrime() {
         lexer_obj.PrintAndWriteToken("<Expression Prime> ::= +<Term><Expression Prime> | -<Term><Expression Prime> | <Empty>");
     }
 
+    /* if token == '+' | '-' {
+        lexer();
+        Term();
+        ExpressionPrime();
+    } */
 }
 
 void Term() {
@@ -370,6 +441,11 @@ void TermPrime() {
         lexer_obj.PrintAndWriteToken("<Term Prime> ::= *<Factor><Term Prime> | /<Factor><Term Prime> | <Empty>");
     }
 
+    /* if token == '*' | '/' {
+        Factor();
+        TermPrime();
+    }*/
+
 }
 
 void Factor() {
@@ -377,6 +453,8 @@ void Factor() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Factor> ::= -<Primary> | <Primary> | identifier");
     }
+
+    Primary();
 
 }
 
