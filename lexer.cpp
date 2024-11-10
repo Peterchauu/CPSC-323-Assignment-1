@@ -50,18 +50,6 @@ std::set<std::string> keywords = {
 };
 
 
-
-
-// Creating a token struct to store specific token types and their respective lexeme
-
-struct token {
-    std::string type;
-    std::string lexeme;
-};
-
-
-
-
 // Function for reading file and outputs a list of every word within the file separated by whitespace
 
 std::vector<std::string> read_file(const std::string& input_file_name) {
@@ -238,127 +226,182 @@ bool comment_track = false;
 
 
 
+
+// Creating a token struct to store specific token types and their respective lexeme
+
+struct token {
+    std::string type;
+    std::string lexeme;
+    int line_number;
+};
+
 // Implementation of core Lexer function, takes input of a single expression.
+class Lexer{
+    
+public:
 
-std::vector<token> lexer(std::string& expression) {
-    std::string buffer;
-    token new_token;
-    std::string chr;
+    token token_obj;
+    std::ifstream input;
+    std::ofstream output;
     std::vector<token> token_list;
-    for (unsigned int iter = 0; iter < expression.size(); iter++) {
-        chr = expression[iter];
-        buffer += chr;
-        if (expression.substr(iter, 2) == "[*") {
-            comment_track = true;
 
-        } else if (expression.substr(iter, 2) == "*]") {
-            comment_track = false;
+    Lexer() {
+        std::string file_input;
+        std::string file_output;
 
-            buffer.clear();
-            iter += 1;
+        std::cout << "Please enter your file name within this directory (please include extension): ";
+        std::cin >> file_input;
 
-        } else if (separators.count(chr) > 0 && !comment_track) {
-            new_token.type = "seperator";
-            new_token.lexeme = chr;
+        std::cout << "Name your output file for your token outputs: ";
+        std::cin >> file_output;
 
-            token_list.push_back(new_token);
+        std::ifstream input (file_input);
+        std::ofstream output (file_output);
 
-            buffer.pop_back();
+        std::string line;
+        std::string expression;
 
-        } else if ((operators.count(chr) > 0 && !comment_track) || (operators.count(expression.substr(iter, 2)) > 0 && !comment_track)) {
+        if (output.is_open()) {
+            output << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
+            output << std::setw(40) << std::setfill('~') << "";
+            output << std::setw(40) << std::setfill(' ') << std::endl;
+        }
+        while (std::getline(input, line)) {
+            
+            std::istringstream stream(line);
+            while (stream >> expression) {
+                getLexer(expression);
 
-            new_token.type = "operator";
-            std::cout << "This is the entire operator: " << expression.substr(iter, 2) << std::endl;
-            if (expression.length() > 1) {
-                buffer = expression.substr(iter, 2);
-                new_token.lexeme = buffer;
+            }
+        }
+    }
 
-                token_list.push_back(new_token);
+    void getLexer(std::string& expression) {
+        std::string buffer;
+        std::string chr;
+        int line = 1;
+        for (unsigned int iter = 0; iter < expression.size(); iter++) {
+            chr = expression[iter];
+            buffer += chr;
+            if (expression.substr(iter, 2) == "[*") {
+                comment_track = true;
+
+            } else if (expression.substr(iter, 2) == "*]") {
+                comment_track = false;
 
                 buffer.clear();
-
                 iter += 1;
 
-            } else {
-                new_token.lexeme = chr;
+            } else if (separators.count(chr) > 0 && !comment_track) {
+                token_obj.type = "seperator";
+                token_obj.lexeme = chr;
+                token_obj.line_number = line;
 
-                token_list.push_back(new_token);
+                token_list.push_back(token_obj);
 
-                buffer.clear();
+                buffer.pop_back();
+
+            } else if ((operators.count(chr) > 0 && !comment_track) || (operators.count(expression.substr(iter, 2)) > 0 && !comment_track)) {
+
+                token_obj.type = "operator";
+                if (expression.length() > 1) {
+                    buffer = expression.substr(iter, 2);
+                    token_obj.lexeme = buffer;
+                    token_obj.line_number = line;
+
+
+                    token_list.push_back(token_obj);
+
+                    buffer.clear();
+
+                    iter += 1;
+
+                } else {
+                    token_obj.lexeme = chr;
+                    token_obj.line_number = line;
+
+                    token_list.push_back(token_obj);
+
+                    buffer.clear();
+                }
+
+            } else if (!comment_track && keywords.count(buffer) > 0){
+                token_obj.lexeme = buffer;
+                token_obj.type = "Keyword";
+                token_obj.line_number = line;
+
+                token_list.push_back(token_obj);
+
+            } else if (!comment_track && is_identifier(buffer)) {
+                token_obj.lexeme = buffer;
+                token_obj.type = "Identifier";
+                token_obj.line_number = line;
+
+                token_list.push_back(token_obj);
+
+            } else if (!comment_track && is_integer(buffer)) {
+                token_obj.lexeme = buffer;
+                token_obj.type = "Integer";
+                token_obj.line_number = line;
+
+                token_list.push_back(token_obj); 
+
+            } else if (!comment_track && is_real(buffer)) {
+                token_obj.lexeme = buffer;
+                token_obj.type = "Real";
+                token_obj.line_number = line;
+
+                token_list.push_back(token_obj);
+
+            } else if (!comment_track && !buffer.empty()) {
+                token_obj.lexeme = buffer;
+                token_obj.type = "Error";
+                token_obj.line_number = line;
+
+                token_list.push_back(token_obj);         
             }
+            line++;
         }
+    } 
+
+    void PrintAndWriteToken(std::vector<token>::const_iterator& token_obj) {
+        output << std::setw(20) << token_obj->type << std::setw(20) << token_obj->lexeme << std::endl;
+        std::cout << std::setw(20) << token_obj->type << std::setw(20) << token_obj->lexeme << std::endl;
     }
-    if (!comment_track && keywords.count(buffer) > 0){
-        new_token.lexeme = buffer;
-        new_token.type = "Keyword";
 
-        token_list.push_back(new_token);
-
-    } else if (!comment_track && is_identifier(buffer)) {
-        new_token.lexeme = buffer;
-        new_token.type = "Identifier";
-
-        token_list.push_back(new_token);
-
-    } else if (!comment_track && is_integer(buffer)) {
-        new_token.lexeme = buffer;
-        new_token.type = "Integer";
-
-        token_list.push_back(new_token); 
-
-    } else if (!comment_track && is_real(buffer)) {
-        new_token.lexeme = buffer;
-        new_token.type = "Real";
-
-        token_list.push_back(new_token);
-
-    } else if (!comment_track && !buffer.empty()) {
-        new_token.lexeme = buffer;
-        new_token.type = "Error";
-
-        token_list.push_back(new_token);
-        
+    void PrintAndWriteToken(std::string rule) {
+        output << rule;
+        std::cout << rule;
     }
-    return token_list;
-} 
+};
 
 int main() {
-    std::string file_input;
-    std::string file_output;
+   
 
-    std::cout << "Please enter your file name within this directory (please include extension): ";
-    std::cin >> file_input;
+    // std::string line;
+    // std::string expression;
+    // std::vector<token> token_list;
 
-    std::cout << "Name your output file for your token outputs: ";
-    std::cin >> file_output;
-
-    std::ifstream input (file_input);
-    std::ofstream output (file_output);
-
-    std::string line;
-    std::string expression;
-    std::vector<token> token_list;
-
-    if (output.is_open()) {
-        output << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
-        output << std::setw(40) << std::setfill('~') << "";
-        output << std::setw(40) << std::setfill(' ') << std::endl;
-    }
-    while (std::getline(input, line)) {
+    // if (output.is_open()) {
+    //     output << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
+    //     output << std::setw(40) << std::setfill('~') << "";
+    //     output << std::setw(40) << std::setfill(' ') << std::endl;
+    // }
+    // while (std::getline(input, line)) {
         
-        std::istringstream stream(line);
-        while (stream >> expression) {
-            token_list = lexer(expression);
-            for (token token : token_list) {
-                std::cout << std::left 
-                << "Token Type: " << std::setw(15) << token.type
-                << "Lexeme: " << token.lexeme << std::endl;
-                output << std::setw(20) << token.type << std::setw(20) << token.lexeme << std::endl;
-            }
-        }
-    }
+    //     std::istringstream stream(line);
+    //     while (stream >> expression) {
+    //         token_list = (expression);
+    //         for (token token : token_list) {
+    //             std::cout << std::left 
+    //             << "Token Type: " << std::setw(15) << token.type
+    //             << "Lexeme: " << token.lexeme << std::endl;
+    //             output << std::setw(20) << token.type << std::setw(20) << token.lexeme << std::endl;
+    //         }
+    //     }
+    // }
     
-    std::cout << "Thank you for using our program, your token outputs have been saved to " << file_output << std::endl;
+    // std::cout << "Thank you for using our program, your token outputs have been saved to " << file_output << std::endl;
 
     return 0;
 }

@@ -1,0 +1,10 @@
+while (fahr > upper) {
+    if (fahr => 10) {
+        abhn = fahr + 5;
+    }
+    else if (fahr => 20) {
+        abhn = fahr + 15;
+    }
+
+    return abhn;
+}
