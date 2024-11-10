@@ -88,7 +88,7 @@ void OptFuncDef() {
 void FuncDef() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Function Definitions> ::= <Function> | <Function Definitions Prime>");
+        lexer_obj.PrintAndWriteToken("<Function Definitions> ::= <Function> <Function Definitions Prime>");
     }
 
 // Kathy: Would there be an if statement here? Since the rule does have an 'or' in it? Without it, it seems like there's an infinite loop if this function is called.
@@ -137,7 +137,7 @@ void OptParamList() {
 void ParamList() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Parameter List> ::= <Parameter> | <Parameter List Prime>");
+        lexer_obj.PrintAndWriteToken("<Parameter List> ::= <Parameter> <Parameter List Prime>");
     }
 
     Parameter();
@@ -148,7 +148,7 @@ void ParamList() {
 void ParamListPrime() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Parameter List Prime> ::= <Parameter List> | <Empty>");
+        lexer_obj.PrintAndWriteToken("<Parameter List Prime> ::= , <Parameter List> | <Empty>");
     }
 
     ParamList();
@@ -213,7 +213,7 @@ void OptDeclList() {
 void DeclList() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Declaration List> ::= <Declaration>; | <Declaration List Prime>;");
+        lexer_obj.PrintAndWriteToken("<Declaration List> ::= <Declaration>; <Declaration List Prime>");
     }
 
     Declaration();
@@ -245,7 +245,7 @@ void Declaration() {
 void Idents() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<IDs> ::= <Identifier> | <ID Prime>");
+        lexer_obj.PrintAndWriteToken("<IDs> ::= <Identifier> <ID Prime>");
     }
 
     Idents();
@@ -256,7 +256,7 @@ void Idents() {
 void IdentsPrime() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<ID Prime> ::= <IDs> | <Empty>");
+        lexer_obj.PrintAndWriteToken("<ID Prime> ::= , <IDs> | <Empty>");
     }
 
     Idents();
@@ -266,7 +266,7 @@ void IdentsPrime() {
 void StatementsList() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Statement List> ::= <Statement> | <Statement List Prime>");
+        lexer_obj.PrintAndWriteToken("<Statement List> ::= <Statement> <Statement List Prime>");
     }
 
     Statement();
@@ -311,7 +311,7 @@ void Assign() {
 void IfCondition() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<If> ::= if ( <Condition> )<Statement> fi | <If Prime>");
+        lexer_obj.PrintAndWriteToken("<If> ::= if ( <Condition> )<Statement> <If Prime> fi");
     }
 
     IfPrime();
@@ -321,7 +321,7 @@ void IfCondition() {
 void IfPrime() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<If Prime> ::= if ( <Condition> )<Statement> else <Statement> fi | <Empty>");
+        lexer_obj.PrintAndWriteToken("<If Prime> ::= else <Statement> | <Empty>");
     }
 
 }
@@ -329,7 +329,7 @@ void IfPrime() {
 void ReturnStuff() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Return> ::= return; | <Return Prime>");
+        lexer_obj.PrintAndWriteToken("<Return> ::= return <Return Prime>;");
     }
 
     ReturnPrime();
@@ -339,7 +339,7 @@ void ReturnStuff() {
 void ReturnPrime() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Return Prime> ::= return <Expression>; | <Empty>");
+        lexer_obj.PrintAndWriteToken("<Return Prime> ::= <Expression> | <Empty>");
     }
 
 }
@@ -430,8 +430,11 @@ void ExpressionPrime() {
 void Term() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Term> ::= <Factor><Term Prime> | id");
+        lexer_obj.PrintAndWriteToken("<Term> ::= <Factor><Term Prime>");
     }
+
+    Factor();
+    TermPrime();
 
 }
 
@@ -451,7 +454,7 @@ void TermPrime() {
 void Factor() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Factor> ::= -<Primary> | <Primary> | identifier");
+        lexer_obj.PrintAndWriteToken("<Factor> ::= -<Primary> | <Primary>");
     }
 
     Primary();
