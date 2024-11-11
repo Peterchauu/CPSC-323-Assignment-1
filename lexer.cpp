@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 
+
 // Declaration for all the necessary separators, operators, and keywords for the Rat24f language
 
 std::set<std::string> separators = {
