@@ -795,10 +795,6 @@ void Primary() {
 
 int main() {
 
-    for (token obj : lexer_obj.token_list) {
-        std::cout << "TYPE: " << obj.type << " LEMEM: " << obj.lexeme << std::endl;
-    }
-
     Rat24F();
 
     return 0;

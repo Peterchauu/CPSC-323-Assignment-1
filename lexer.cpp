@@ -376,9 +376,7 @@ private:
             }
 
             if (!comment_track && is_real(expression)) {
-                
-                std::cout << "REAL: " << temp << std::endl;
-                
+                                
                 token_obj.lexeme = expression;
                 token_obj.type = "Real";
                 token_obj.line_number = line;
@@ -388,8 +386,6 @@ private:
                 break;
 
             } else if (!comment_track && (DirtyString(chr) || iter == expression.size() - 1)) {
-
-                std::cout << "REAL: " << temp << std::endl;
 
                 if (is_real(temp)) {
                     token_obj.lexeme = temp;
