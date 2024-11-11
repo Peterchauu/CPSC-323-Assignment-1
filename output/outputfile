@@ -1,18 +1,2 @@
 token               Lexeme              
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-seperator           (                   
-Identifier          a                   
-operator            =                   
-Identifier          b                   
-operator            +                   
-Identifier          c                   
-seperator           ;                   
-seperator           )                   
-seperator           (                   
-Identifier          a                   
-operator            =                   
-Identifier          b                   
-operator            +                   
-Identifier          c                   
-seperator           ;                   
-seperator           )                   
