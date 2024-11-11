@@ -367,6 +367,7 @@ public:
     void PrintAndWriteToken(std::vector<token>::const_iterator& token_obj) {
         output << std::setw(20) << token_obj->type << std::setw(20) << token_obj->lexeme << std::endl;
         std::cout << std::setw(20) << token_obj->type << std::setw(20) << token_obj->lexeme << std::endl;
+        token_obj++;
     }
 
     void PrintAndWriteToken(std::string rule) {
@@ -375,7 +376,7 @@ public:
     }
 };
 
-int main() {
+// int main() {
    
 
     // std::string line;
@@ -403,5 +404,5 @@ int main() {
     
     // std::cout << "Thank you for using our program, your token outputs have been saved to " << file_output << std::endl;
 
-    return 0;
-}
+//     return 0;
+// }
