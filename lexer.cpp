@@ -125,12 +125,11 @@ bool is_identifier(std::string& word) {
 // Implementation of Real Numbers FSM
 
 std::vector<std::vector<int>> real_states = {
-
     {1, 3, 2, -1},
-    {-1,-1,2, 42},
-    {-1, -1,-1, -1},
-    {3, 3, 4, 42},
-    {4, 4,-1, 42}
+    {-1,-1,3, 42},
+    {4, 4,-1, -1},         
+    {3, 3, 2, 42},          
+    {4, 4,-1, 42}               
 };
 
 bool is_real(std::string& real) {
@@ -138,7 +137,7 @@ bool is_real(std::string& real) {
     int selected_char;
 
     real += "$";
-    for (const char& chr :real) {
+    for (const char& chr : real) {
         if (chr == '0') {
             selected_char = 0;
         } else if (isdigit(chr)) {
@@ -238,43 +237,60 @@ struct token {
 
 // Implementation of core Lexer function, takes input of a single expression.
 class Lexer{
-    
+
 public:
 
-    std::ifstream input;
-    std::ofstream output;
     std::vector<token> token_list;
-    int line = 1;
 
     Lexer() {
-        std::string file_input;
-        std::string file_output;
+
+        std::string input_file;
+        std::string output_file;
 
         std::cout << "Please enter your file name within this directory (please include extension): ";
-        std::cin >> file_input;
+        std::cin >> input_file;
 
-        std::cout << "Name your output file for your token outputs: ";
-        std::cin >> file_output;
+        std::cout << "Name your output file for your token and production rule outputs: ";
+        std::cin >> output_file;
 
-        std::ifstream input (file_input);
-        std::ofstream output (file_output);
+        output.open(output_file);
+        std::ifstream input (input_file);
 
         std::string line;
         std::string expression;
 
-        if (output.is_open()) {
-            output << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
-            output << std::setw(40) << std::setfill('~') << "";
-            output << std::setw(40) << std::setfill(' ') << std::endl;
+        while (std::getline(input, line)) {
+
+            std::istringstream stream(line);
+            while (stream >> expression) {
+                getLexer(expression);
+            }
+            Lexer::line++;
         }
 
-        std::stringstream stream;
-        stream << input.rdbuf();
+        std::ofstream output (output_file);
 
-        while (stream >> expression) {
-            getLexer(expression);
-        }
     }
+
+    void PrintAndWriteToken(std::vector<token>::const_iterator& token_obj) {
+        if (output.is_open()) {
+            output << "\n" << std::left << "Token: " << std::setw(20) << token_obj->type << "Lexeme: " << token_obj->lexeme << "\n\n";
+        }
+        std::cout << "\n" << std::left << "Token: " << std::setw(20) << token_obj->type << "Lexeme: " << token_obj->lexeme << "\n\n";
+        token_obj++;
+    }
+
+    void PrintAndWriteToken(std::string rule) {
+        if (output.is_open()) {
+            output << rule << std::endl;
+        }
+        std::cout << rule << std::endl;
+    }
+    
+private:
+
+    std::ofstream output;
+    int line = 1;
 
     void getLexer(std::string& expression) {
 
@@ -294,9 +310,9 @@ public:
 
                 token_obj.lexeme = expression;
                 token_obj.type = "Keyword";
-                token_obj.line_number = Lexer::line;
+                token_obj.line_number = line;
 
-                Lexer::token_list.push_back(token_obj);
+                token_list.push_back(token_obj);
                 buffer.clear();
                 break;
 
@@ -305,9 +321,9 @@ public:
                 if (keywords.count(temp) > 0) {
                     token_obj.lexeme = temp;
                     token_obj.type = "Keyword";
-                    token_obj.line_number = Lexer::line;
+                    token_obj.line_number = line;
 
-                    Lexer::token_list.push_back(token_obj);
+                    token_list.push_back(token_obj);
                     buffer.clear();
                     temp.clear();
                 }
@@ -317,9 +333,9 @@ public:
 
                 token_obj.lexeme = expression;
                 token_obj.type = "Identifier";
-                token_obj.line_number = Lexer::line;
+                token_obj.line_number = line;
 
-                Lexer::token_list.push_back(token_obj);
+                token_list.push_back(token_obj);
                 buffer.clear();
                 break; 
                 
@@ -328,9 +344,9 @@ public:
                 if (is_identifier(temp)) {
                     token_obj.lexeme = temp;
                     token_obj.type = "Identifier";
-                    token_obj.line_number = Lexer::line;
+                    token_obj.line_number = line;
 
-                    Lexer::token_list.push_back(token_obj);
+                    token_list.push_back(token_obj);
                     buffer.clear();
                     temp.clear();
                 }
@@ -339,10 +355,10 @@ public:
             if (!comment_track && is_integer(expression)) {
 
                 token_obj.lexeme = expression;
-                token_obj.type = "Integer";
-                token_obj.line_number = Lexer::line;
+                token_obj.type = "integer";
+                token_obj.line_number = line;
 
-                Lexer::token_list.push_back(token_obj); 
+                token_list.push_back(token_obj); 
                 buffer.clear();
                 break;
 
@@ -350,35 +366,39 @@ public:
                 
                 if (is_integer(temp)) {
                     token_obj.lexeme = temp;
-                    token_obj.type = "Integer";
-                    token_obj.line_number = Lexer::line;
+                    token_obj.type = "integer";
+                    token_obj.line_number = line;
 
-                    Lexer::token_list.push_back(token_obj); 
+                    token_list.push_back(token_obj); 
                     buffer.clear();
                     temp.clear();
                 }
             }
 
             if (!comment_track && is_real(expression)) {
-
+                
+                std::cout << "REAL: " << temp << std::endl;
+                
                 token_obj.lexeme = expression;
-                token_obj.type = "Integer";
-                token_obj.line_number = Lexer::line;
+                token_obj.type = "Real";
+                token_obj.line_number = line;
 
-                Lexer::token_list.push_back(token_obj); 
+                token_list.push_back(token_obj); 
                 buffer.clear();
                 break;
 
             } else if (!comment_track && (DirtyString(chr) || iter == expression.size() - 1)) {
 
+                std::cout << "REAL: " << temp << std::endl;
+
                 if (is_real(temp)) {
                     token_obj.lexeme = temp;
                     token_obj.type = "Real";
-                    token_obj.line_number = Lexer::line;
+                    token_obj.line_number = line;
 
-                    Lexer::token_list.push_back(token_obj);
+                    token_list.push_back(token_obj);
                     buffer.clear();
-                    break;
+                    temp.clear();
                 }
             }
 
@@ -398,9 +418,9 @@ public:
             if (separators.count(chr) > 0 && !comment_track ) {
                 token_obj.type = "seperator";
                 token_obj.lexeme = chr;
-                token_obj.line_number = Lexer::line;
+                token_obj.line_number = line;
 
-                Lexer::token_list.push_back(token_obj);
+                token_list.push_back(token_obj);
 
                 buffer.clear();
             }
@@ -410,9 +430,9 @@ public:
                 token_obj.type = "operator";
                 if (expression.length() > 1 && chr != "-") {
                     token_obj.lexeme = expression.substr(iter, 2);
-                    token_obj.line_number = Lexer::line;
+                    token_obj.line_number = line;
 
-                    Lexer::token_list.push_back(token_obj);
+                    token_list.push_back(token_obj);
 
                     buffer.clear();
 
@@ -420,45 +440,25 @@ public:
 
                 } else {
                     token_obj.lexeme = chr;
-                    token_obj.line_number = Lexer::line;
+                    token_obj.line_number = line;
 
-                    Lexer::token_list.push_back(token_obj);
+                    token_list.push_back(token_obj);
 
                     buffer.clear();
                 }
-            } if (expression '\n') {
-                Lexer::line++;
             }
         }
 
         if (!comment_track && !buffer.empty()) {
             token_obj.lexeme = expression;
             token_obj.type = "Error";
-            token_obj.line_number = Lexer::line;
+            token_obj.line_number = line;
 
-            Lexer::token_list.push_back(token_obj);         
+            token_list.push_back(token_obj);         
         }
     } 
-
-    void PrintAndWriteToken(std::vector<token>::const_iterator& token_obj) {
-        output << std::setw(20) << token_obj->type << std::setw(20) << token_obj->lexeme << std::endl;
-        std::cout << std::setw(20) << token_obj->type << std::setw(20) << token_obj->lexeme << std::endl;
-        token_obj++;
-    }
-
-    void PrintAndWriteToken(std::string rule) {
-        output << rule << std::endl;
-        std::cout << rule << std::endl;
-    }
 
     bool DirtyString(std::string string) {
         return (operators.count(string) > 0 || separators.count(string) > 0);
     }
-
-    std::string CleanString(std::string string) {
-        string.pop_back();
-        return string;
-    }
-
-
 };

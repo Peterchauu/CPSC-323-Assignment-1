@@ -10,8 +10,9 @@ function convert (fahr integer)
          {  put (low);
              put (convert (low));
              low =  low  +  step;
-         } 
-
+         }
+    
+         
  @
 
 

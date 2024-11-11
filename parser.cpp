@@ -2,7 +2,6 @@
 
 #include "lexer.cpp"
 
-
 Lexer lexer_obj;
 std::vector<token>::const_iterator token_iter = lexer_obj.token_list.cbegin();
 
@@ -49,8 +48,6 @@ void Primary();
 
 
 bool Match(std::string desired_string, std::vector<token>::const_iterator token_obj, bool error_toggle) {
-
-    std::cout << "Desired: " << desired_string << "         lexeme: " << token_obj->lexeme << std::endl;
     
     if (desired_string == token_obj->lexeme || desired_string == token_obj->type) {
         if (output_rule) {
@@ -62,12 +59,12 @@ bool Match(std::string desired_string, std::vector<token>::const_iterator token_
     }
 
     if ((desired_string != token_obj->lexeme) && error_toggle) {
-        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "' ... Terminating" << std::endl;
+        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "', but got " << token_obj->lexeme << "... Terminating" << std::endl;
         exit(1);
     }
 
     if ((desired_string != token_obj->type) && error_toggle) {
-        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "' ... Terminating" << std::endl;
+        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "', but got " << token_obj->type << " ... Terminating" << std::endl;
         exit(1);
     }
 
@@ -109,7 +106,7 @@ void OptFuncDef() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Opt Function Definitions> ::= <Function Definitions> | <Empty>");
     }
-    std::cout << token_iter->lexeme << std::endl;
+
     if (token_iter->lexeme == "function") {
         if (output_rule) {
             lexer_obj.PrintAndWriteToken("<Opt Function Definitions> ::= <Function Definitions>");
@@ -243,13 +240,6 @@ void Qualifier() {
         std::cout << "ERROR, line " << token_iter->line_number << ": Expected type 'integer', 'boolean', or 'real'... Terminating" << std::endl;
         exit(1);
     }
-
-// Kathy: I'm not sure if me typing this might help. Printing the production rule for Qualifer might be different.
-// Maybe we use an if statement that checks whether the token type is either integer, boolean, or real
-// If it's any one of those three, then it prints out either one of those three.
-// If not, then maybe it prints out an error message?
-// It's also possible there are more that print similar to this.
-
 }
 void Body() {
 
@@ -339,7 +329,7 @@ void IdentsPrime() {
         lexer_obj.PrintAndWriteToken("<ID Prime> ::= ,<IDs> | <Empty>");
     }
 
-    if(Match(",", token_iter, false)) {
+    if (Match(",", token_iter, false)) {
         if (output_rule) {
             lexer_obj.PrintAndWriteToken("<ID Prime> ::= ,<IDs>");
         }
@@ -361,12 +351,13 @@ void StatementsList() {
     StatementsListPrime();
     
 }
+
 void StatementsListPrime() {
 
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Statement List Prime> ::= <Statement List> | <Empty>");
     }
-    if (token_iter->lexeme != "}") {
+    if (token_iter->lexeme != "}" && token_iter->lexeme != "@") {
 
         if (output_rule) {
             lexer_obj.PrintAndWriteToken("<Statement List Prime> ::= <Statement List>");
@@ -385,9 +376,6 @@ void Statement() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>");
     }
-
-    std::cout << "TOKEN TYPE: " << token_iter->type << " LEXEME: " << token_iter->lexeme << std::endl;
-
 
     if (token_iter->lexeme == "{" ) {
 
@@ -459,13 +447,14 @@ void Compound() {
 void Assign() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<Assign> ::= <Identifier> = <Expression>");
+        lexer_obj.PrintAndWriteToken("<Assign> ::= <Identifier> = <Expression>;");
     }
 
     Match("Identifier", token_iter, true);
 
     if (Match("=", token_iter, true)) {
         Expression();
+        Match(";", token_iter, true);
     } else {
         std::cout << "ERROR, line " << token_iter->line_number << ": Expected '=' ... Terminating" << std::endl;
         exit(1);
@@ -474,7 +463,7 @@ void Assign() {
 }
 void IfCondition() {
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<If> ::= if ( <Condition> ) <Statement> <If Prime> fi");
+        lexer_obj.PrintAndWriteToken("<If> ::= if ( <Condition> ) <Statement> <If Prime>");
     }
 
     Match("if", token_iter, true);
@@ -483,7 +472,6 @@ void IfCondition() {
         Match(")", token_iter, true);
         Statement();
         IfPrime();
-        Match("fi", token_iter, true);
     } else {
         std::cout << "ERROR, line " << token_iter->line_number << ": Expected '(' ... Terminating" << std::endl;
         exit(1);
@@ -492,23 +480,28 @@ void IfCondition() {
 void IfPrime() {
 
     if (output_rule) {
-        lexer_obj.PrintAndWriteToken("<If Prime> ::= else <Statement> | <Empty>");
+        lexer_obj.PrintAndWriteToken("<If Prime> ::= else <Statement> fi | fi");
     }
 
     if (Match("else", token_iter, false)) {
 
         if (output_rule) {
-            lexer_obj.PrintAndWriteToken("<If Prime> ::= else <Statement>");
+            lexer_obj.PrintAndWriteToken("<If Prime> ::= else <Statement> fi");
         }
 
         Statement();
 
-    } else {
-        if (output_rule) {
-            lexer_obj.PrintAndWriteToken("<If Prime> ::= <Empty>");
-        }
-    }
 
+    } else if (Match("fi", token_iter, false)) {
+        
+        if (output_rule) {
+            lexer_obj.PrintAndWriteToken("<If Prime> ::= fi");
+        }
+
+    } else {
+        std::cout << "ERROR, line " << token_iter->line_number << ": Expected 'fi' ... Terminating" << std::endl;
+        exit(1);
+    }
 }
 void ReturnStuff() {
 
@@ -657,10 +650,26 @@ void ExpressionPrime() {
         lexer_obj.PrintAndWriteToken("<Expression Prime> ::= +<Term><Expression Prime> | -<Term><Expression Prime> | <Empty>");
     }
 
-    if (token_iter->lexeme == "+" || token_iter->lexeme == "-") {
-        lexer_obj.PrintAndWriteToken(token_iter);
+    if (Match("+", token_iter, false)) {
+
+        if (output_rule) {
+            lexer_obj.PrintAndWriteToken("<Expression Prime> ::= +<Term><Expression Prime>");
+        }
+
         Term();
         ExpressionPrime();
+
+    } else if (Match("-", token_iter, false)) {
+
+        if (output_rule) {
+            lexer_obj.PrintAndWriteToken("<Expression Prime> ::= -<Term><Expression Prime>");
+        }
+
+        Term();
+        ExpressionPrime();
+
+    } else {
+        lexer_obj.PrintAndWriteToken("<Expression Prime> ::= <Empty>");
     }
 
 }
@@ -721,7 +730,7 @@ void Factor() {
 
         if (token_iter->type == "Identifier") {
             Primary();
-        } else if (token_iter->type == "Integer") {
+        } else if (token_iter->type == "integer") {
             Primary();
         } else if (token_iter->lexeme == "(") {
             Primary();
@@ -755,7 +764,7 @@ void Primary() {
             Idents();
             Match(")", token_iter, true);
         }
-    } else if (Match("Integer", token_iter, false)) {
+    } else if (Match("integer", token_iter, false)) {
         if (output_rule) {
             lexer_obj.PrintAndWriteToken("<Primary> ::= <Integer>");
         }
@@ -784,10 +793,13 @@ void Primary() {
     }
 }
 
-
 int main() {
 
+    for (token obj : lexer_obj.token_list) {
+        std::cout << "TYPE: " << obj.type << " LEMEM: " << obj.lexeme << std::endl;
+    }
+
     Rat24F();
-    
+
     return 0;
 }
