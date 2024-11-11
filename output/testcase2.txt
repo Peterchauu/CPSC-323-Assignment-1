@@ -1,0 +1,21 @@
+function add (fahr real)
+{
+    return 6 + fahr;
+}
+
+@
+real sample;
+
+get (sample);
+while (sample < 50)
+{
+    put (sample);
+    put (add (sample));
+
+    if (sample == 30)
+    {
+        return sample;
+    }
+    fi
+}
+@

@@ -1,0 +1,9 @@
+@
+integer abd, o9ub, pj98b;
+real h6ghb;
+
+get (abd, o9ub, pj98b);
+get (h6ghb);
+
+put (abd);
+@

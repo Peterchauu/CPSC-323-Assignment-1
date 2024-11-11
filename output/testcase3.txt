@@ -1,0 +1,34 @@
+function multiply (mult real)
+{
+    return 8 * (mult * 0.6);
+}
+
+function divide (div real)
+{
+    return 3 / (div + 8);
+}
+
+@
+real a1b, c2d, e3f, g4h;
+
+get (a1b, c2d, e3f, g4h);
+while (a1b < 20)
+{
+    a1b = a1b + 1;
+
+    put (multiply (c2d));
+    put (divide (e3f));
+
+    g4h = g4h - 0.5;
+
+    if (g4h == 0)
+    {
+        return g4h;
+    }
+    else if (a1b == 20)
+    {
+        return a1b;
+    }
+    fi
+}
+@
