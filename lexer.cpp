@@ -241,10 +241,10 @@ class Lexer{
     
 public:
 
-    token token_obj;
     std::ifstream input;
     std::ofstream output;
     std::vector<token> token_list;
+    int line = 1;
 
     Lexer() {
         std::string file_input;
@@ -267,51 +267,152 @@ public:
             output << std::setw(40) << std::setfill('~') << "";
             output << std::setw(40) << std::setfill(' ') << std::endl;
         }
-        while (std::getline(input, line)) {
-            
-            std::istringstream stream(line);
-            while (stream >> expression) {
-                getLexer(expression);
 
-            }
+        std::stringstream stream;
+        stream << input.rdbuf();
+
+        while (stream >> expression) {
+            getLexer(expression);
         }
     }
 
     void getLexer(std::string& expression) {
+
+        token token_obj;
         std::string buffer;
         std::string chr;
-        int line = 1;
+        std::string temp;
+
         for (unsigned int iter = 0; iter < expression.size(); iter++) {
             chr = expression[iter];
             buffer += chr;
-            if (expression.substr(iter, 2) == "[*") {
+            if (!DirtyString(chr)) {
+                temp += chr;
+            }
+            
+            if (!comment_track && keywords.count(expression) > 0) {
+
+                token_obj.lexeme = expression;
+                token_obj.type = "Keyword";
+                token_obj.line_number = Lexer::line;
+
+                Lexer::token_list.push_back(token_obj);
+                buffer.clear();
+                break;
+
+            } else if (!comment_track && (DirtyString(chr) || iter == expression.size() - 1)) {
+                
+                if (keywords.count(temp) > 0) {
+                    token_obj.lexeme = temp;
+                    token_obj.type = "Keyword";
+                    token_obj.line_number = Lexer::line;
+
+                    Lexer::token_list.push_back(token_obj);
+                    buffer.clear();
+                    temp.clear();
+                }
+            }
+
+            if (!comment_track && is_identifier(expression)) {
+
+                token_obj.lexeme = expression;
+                token_obj.type = "Identifier";
+                token_obj.line_number = Lexer::line;
+
+                Lexer::token_list.push_back(token_obj);
+                buffer.clear();
+                break; 
+                
+            } else if (!comment_track && (DirtyString(chr) || iter == expression.size() - 1)) {
+
+                if (is_identifier(temp)) {
+                    token_obj.lexeme = temp;
+                    token_obj.type = "Identifier";
+                    token_obj.line_number = Lexer::line;
+
+                    Lexer::token_list.push_back(token_obj);
+                    buffer.clear();
+                    temp.clear();
+                }
+            }
+
+            if (!comment_track && is_integer(expression)) {
+
+                token_obj.lexeme = expression;
+                token_obj.type = "Integer";
+                token_obj.line_number = Lexer::line;
+
+                Lexer::token_list.push_back(token_obj); 
+                buffer.clear();
+                break;
+
+            } else if (!comment_track && (DirtyString(chr) || iter == expression.size() - 1)) {
+                
+                if (is_integer(temp)) {
+                    token_obj.lexeme = temp;
+                    token_obj.type = "Integer";
+                    token_obj.line_number = Lexer::line;
+
+                    Lexer::token_list.push_back(token_obj); 
+                    buffer.clear();
+                    temp.clear();
+                }
+            }
+
+            if (!comment_track && is_real(expression)) {
+
+                token_obj.lexeme = expression;
+                token_obj.type = "Integer";
+                token_obj.line_number = Lexer::line;
+
+                Lexer::token_list.push_back(token_obj); 
+                buffer.clear();
+                break;
+
+            } else if (!comment_track && (DirtyString(chr) || iter == expression.size() - 1)) {
+
+                if (is_real(temp)) {
+                    token_obj.lexeme = temp;
+                    token_obj.type = "Real";
+                    token_obj.line_number = Lexer::line;
+
+                    Lexer::token_list.push_back(token_obj);
+                    buffer.clear();
+                    break;
+                }
+            }
+
+            if (expression.substr(iter, 2) == "[*" || expression == "[*") {
                 comment_track = true;
 
-            } else if (expression.substr(iter, 2) == "*]") {
+                buffer.clear();
+            }
+
+            if (expression.substr(iter, 2) == "*]" || expression == "*]") {
                 comment_track = false;
 
                 buffer.clear();
-                iter += 1;
+                break;
+            }
 
-            } else if (separators.count(chr) > 0 && !comment_track) {
+            if (separators.count(chr) > 0 && !comment_track ) {
                 token_obj.type = "seperator";
                 token_obj.lexeme = chr;
-                token_obj.line_number = line;
+                token_obj.line_number = Lexer::line;
 
-                token_list.push_back(token_obj);
+                Lexer::token_list.push_back(token_obj);
 
-                buffer.pop_back();
+                buffer.clear();
+            }
 
-            } else if ((operators.count(chr) > 0 && !comment_track) || (operators.count(expression.substr(iter, 2)) > 0 && !comment_track)) {
+            if ((operators.count(chr) > 0 && !comment_track) || (operators.count(expression.substr(iter, 2)) > 0 && !comment_track)) {
 
                 token_obj.type = "operator";
-                if (expression.length() > 1) {
-                    buffer = expression.substr(iter, 2);
-                    token_obj.lexeme = buffer;
-                    token_obj.line_number = line;
+                if (expression.length() > 1 && chr != "-") {
+                    token_obj.lexeme = expression.substr(iter, 2);
+                    token_obj.line_number = Lexer::line;
 
-
-                    token_list.push_back(token_obj);
+                    Lexer::token_list.push_back(token_obj);
 
                     buffer.clear();
 
@@ -319,49 +420,23 @@ public:
 
                 } else {
                     token_obj.lexeme = chr;
-                    token_obj.line_number = line;
+                    token_obj.line_number = Lexer::line;
 
-                    token_list.push_back(token_obj);
+                    Lexer::token_list.push_back(token_obj);
 
                     buffer.clear();
                 }
-
-            } else if (!comment_track && keywords.count(buffer) > 0){
-                token_obj.lexeme = buffer;
-                token_obj.type = "Keyword";
-                token_obj.line_number = line;
-
-                token_list.push_back(token_obj);
-
-            } else if (!comment_track && is_identifier(buffer)) {
-                token_obj.lexeme = buffer;
-                token_obj.type = "Identifier";
-                token_obj.line_number = line;
-
-                token_list.push_back(token_obj);
-
-            } else if (!comment_track && is_integer(buffer)) {
-                token_obj.lexeme = buffer;
-                token_obj.type = "Integer";
-                token_obj.line_number = line;
-
-                token_list.push_back(token_obj); 
-
-            } else if (!comment_track && is_real(buffer)) {
-                token_obj.lexeme = buffer;
-                token_obj.type = "Real";
-                token_obj.line_number = line;
-
-                token_list.push_back(token_obj);
-
-            } else if (!comment_track && !buffer.empty()) {
-                token_obj.lexeme = buffer;
-                token_obj.type = "Error";
-                token_obj.line_number = line;
-
-                token_list.push_back(token_obj);         
+            } if (expression '\n') {
+                Lexer::line++;
             }
-            line++;
+        }
+
+        if (!comment_track && !buffer.empty()) {
+            token_obj.lexeme = expression;
+            token_obj.type = "Error";
+            token_obj.line_number = Lexer::line;
+
+            Lexer::token_list.push_back(token_obj);         
         }
     } 
 
@@ -372,38 +447,18 @@ public:
     }
 
     void PrintAndWriteToken(std::string rule) {
-        output << rule;
-        std::cout << rule;
+        output << rule << std::endl;
+        std::cout << rule << std::endl;
     }
+
+    bool DirtyString(std::string string) {
+        return (operators.count(string) > 0 || separators.count(string) > 0);
+    }
+
+    std::string CleanString(std::string string) {
+        string.pop_back();
+        return string;
+    }
+
+
 };
-
-// int main() {
-   
-
-    // std::string line;
-    // std::string expression;
-    // std::vector<token> token_list;
-
-    // if (output.is_open()) {
-    //     output << std::setw(20) << std::left << "token" << std::setw(20) << "Lexeme" << std::endl;
-    //     output << std::setw(40) << std::setfill('~') << "";
-    //     output << std::setw(40) << std::setfill(' ') << std::endl;
-    // }
-    // while (std::getline(input, line)) {
-        
-    //     std::istringstream stream(line);
-    //     while (stream >> expression) {
-    //         token_list = (expression);
-    //         for (token token : token_list) {
-    //             std::cout << std::left 
-    //             << "Token Type: " << std::setw(15) << token.type
-    //             << "Lexeme: " << token.lexeme << std::endl;
-    //             output << std::setw(20) << token.type << std::setw(20) << token.lexeme << std::endl;
-    //         }
-    //     }
-    // }
-    
-    // std::cout << "Thank you for using our program, your token outputs have been saved to " << file_output << std::endl;
-
-//     return 0;
-// }

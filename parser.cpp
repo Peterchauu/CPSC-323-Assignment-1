@@ -49,24 +49,32 @@ void Primary();
 
 
 bool Match(std::string desired_string, std::vector<token>::const_iterator token_obj, bool error_toggle) {
-    if (desired_string != token_obj->lexeme && error_toggle) {
-        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "' ... Terminating" << std::endl;
-        exit(1);
-    } else if (desired_string != token_obj->type && error_toggle) {
-        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "' ... Terminating" << std::endl;
-        exit(1);
-    } else if (desired_string != token_obj->lexeme || desired_string != token_obj->lexeme) {
-        return false;
+
+    std::cout << "Desired: " << desired_string << "         lexeme: " << token_obj->lexeme << std::endl;
+    
+    if (desired_string == token_obj->lexeme || desired_string == token_obj->type) {
+        if (output_rule) {
+            lexer_obj.PrintAndWriteToken(token_obj);
+        }
+
+        token_iter++;
+        return true;
     }
 
-    if (output_rule) {
-        lexer_obj.PrintAndWriteToken(token_obj);
+    if ((desired_string != token_obj->lexeme) && error_toggle) {
+        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "' ... Terminating" << std::endl;
+        exit(1);
     }
 
-    token_obj++;
-    return true;
+    if ((desired_string != token_obj->type) && error_toggle) {
+        std::cout << "ERROR, line " << token_iter->line_number << ": Expected '" << desired_string << "' ... Terminating" << std::endl;
+        exit(1);
+    }
+
+    return false;
 
 }
+
 
 void Rat24F() {
 
@@ -85,18 +93,14 @@ void Rat24F() {
 
     OptFuncDef();
 
-    if (!Match("@", token_iter, false)) {
-        std::cout << "ERROR, line " << token_iter->line_number << ": Expected @ ... Terminating" << std::endl;
-        exit(1);
-    }
+    Match("@", token_iter, true);
 
     OptDeclList();
     StatementsList();
 
-    if (!Match("@", token_iter, false)) {
-        std::cout << "ERROR, line " << token_iter->line_number << ": Expected @ ... Terminating" << std::endl;
-        exit(1);
-    }
+    Match("@", token_iter, true);
+
+
 
 }
 
@@ -105,7 +109,7 @@ void OptFuncDef() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Opt Function Definitions> ::= <Function Definitions> | <Empty>");
     }
-
+    std::cout << token_iter->lexeme << std::endl;
     if (token_iter->lexeme == "function") {
         if (output_rule) {
             lexer_obj.PrintAndWriteToken("<Opt Function Definitions> ::= <Function Definitions>");
@@ -325,7 +329,7 @@ void Idents() {
         lexer_obj.PrintAndWriteToken("<IDs> ::= <Identifier> <ID Prime>");
     }
 
-    Match("Identifier", token_iter);
+    Match("Identifier", token_iter, true);
     IdentsPrime();
 
 }
@@ -381,6 +385,9 @@ void Statement() {
     if (output_rule) {
         lexer_obj.PrintAndWriteToken("<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>");
     }
+
+    std::cout << "TOKEN TYPE: " << token_iter->type << " LEXEME: " << token_iter->lexeme << std::endl;
+
 
     if (token_iter->lexeme == "{" ) {
 
@@ -714,7 +721,7 @@ void Factor() {
 
         if (token_iter->type == "Identifier") {
             Primary();
-        } else if (token_iter->lexeme == "integer") {
+        } else if (token_iter->type == "Integer") {
             Primary();
         } else if (token_iter->lexeme == "(") {
             Primary();
@@ -748,7 +755,7 @@ void Primary() {
             Idents();
             Match(")", token_iter, true);
         }
-    } else if (Match("integer", token_iter, false)) {
+    } else if (Match("Integer", token_iter, false)) {
         if (output_rule) {
             lexer_obj.PrintAndWriteToken("<Primary> ::= <Integer>");
         }
