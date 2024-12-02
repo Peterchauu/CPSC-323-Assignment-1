@@ -1,0 +1,162 @@
+<Rat24F> ::= <Opt Function Definitions> @ <Opt Declaration List> <Statement List> @
+<Opt Function Definitions> ::= <Function Definitions> | <Empty>
+<Opt Function Definitions> ::= <Empty>
+
+Token: operator            Lexeme: @
+
+<Opt Declaration List> ::= <Declaration List> | <Empty>
+<Opt Declaration List> ::= <Declaration List>
+<Declaration List> ::= <Declaration> ; <Declaration List Prime>
+<Declaration> ::= <Qualifier> <IDs>
+<Qualifier> ::= integer | boolean | real
+
+Token: Keyword             Lexeme: integer
+
+<Qualifier> ::= integer
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: abd
+
+<ID Prime> ::= ,<IDs> | <Empty>
+
+Token: seperator           Lexeme: ,
+
+<ID Prime> ::= ,<IDs>
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: o9ub
+
+<ID Prime> ::= ,<IDs> | <Empty>
+
+Token: seperator           Lexeme: ,
+
+<ID Prime> ::= ,<IDs>
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: pj98b
+
+<ID Prime> ::= ,<IDs> | <Empty>
+<ID Prime> ::= <Empty>
+
+Token: seperator           Lexeme: ;
+
+<Declaration List Prime> ::= <Declaration List> | <Empty>
+<Declaration List Prime> ::= <Declaration List>
+<Declaration List> ::= <Declaration> ; <Declaration List Prime>
+<Declaration> ::= <Qualifier> <IDs>
+<Qualifier> ::= integer | boolean | real
+
+Token: Identifier          Lexeme: real
+
+<Qualifier> ::= real
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: h6ghb
+
+<ID Prime> ::= ,<IDs> | <Empty>
+<ID Prime> ::= <Empty>
+
+Token: seperator           Lexeme: ;
+
+<Declaration List Prime> ::= <Declaration List> | <Empty>
+<Declaration List Prime> ::= <Empty>
+<Statement List> ::= <Statement> <Statement List Prime>
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+<Statement> ::= <Scan>
+<Scan> ::= get ( <IDs> );
+
+Token: Keyword             Lexeme: get
+
+
+Token: seperator           Lexeme: (
+
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: abd
+
+<ID Prime> ::= ,<IDs> | <Empty>
+
+Token: seperator           Lexeme: ,
+
+<ID Prime> ::= ,<IDs>
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: o9ub
+
+<ID Prime> ::= ,<IDs> | <Empty>
+
+Token: seperator           Lexeme: ,
+
+<ID Prime> ::= ,<IDs>
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: pj98b
+
+<ID Prime> ::= ,<IDs> | <Empty>
+<ID Prime> ::= <Empty>
+
+Token: seperator           Lexeme: )
+
+
+Token: seperator           Lexeme: ;
+
+<Statement List Prime> ::= <Statement List> | <Empty>
+<Statement List Prime> ::= <Statement List>
+<Statement List> ::= <Statement> <Statement List Prime>
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+<Statement> ::= <Scan>
+<Scan> ::= get ( <IDs> );
+
+Token: Keyword             Lexeme: get
+
+
+Token: seperator           Lexeme: (
+
+<IDs> ::= <Identifier> <ID Prime>
+
+Token: Identifier          Lexeme: h6ghb
+
+<ID Prime> ::= ,<IDs> | <Empty>
+<ID Prime> ::= <Empty>
+
+Token: seperator           Lexeme: )
+
+
+Token: seperator           Lexeme: ;
+
+<Statement List Prime> ::= <Statement List> | <Empty>
+<Statement List Prime> ::= <Statement List>
+<Statement List> ::= <Statement> <Statement List Prime>
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+<Statement> ::= <Print>
+<Print> ::= put ( <Expression> );
+
+Token: Keyword             Lexeme: put
+
+
+Token: seperator           Lexeme: (
+
+<Expression> ::= <Term><Expression Prime>
+<Term> ::= <Factor><Term Prime>
+<Factor> ::= -<Primary> | <Primary>
+<Factor> ::= <Primary>
+<Primary> ::= <Identifier> | <Integer> | <Identifier>(<IDs>) | (<Expression>) | <Real> | true | false
+
+Token: Identifier          Lexeme: abd
+
+<Primary> ::= <Identifier>
+<Term Prime> ::= *<Factor><Term Prime> | /<Factor><Term Prime> | <Empty>
+<Term Prime> ::= <Empty>
+<Expression Prime> ::= +<Term><Expression Prime> | -<Term><Expression Prime> | <Empty>
+<Expression Prime> ::= <Empty>
+
+Token: seperator           Lexeme: )
+
+
+Token: seperator           Lexeme: ;
+
+<Statement List Prime> ::= <Statement List> | <Empty>
+<Statement List Prime> ::= <Empty>
+
+Token: operator            Lexeme: @
+
