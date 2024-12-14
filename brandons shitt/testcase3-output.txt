@@ -1,0 +1,51 @@
+
+Generated Assembly Code:
+1 PUSHI 0
+2 POPM 9002
+3 PUSHI 0
+4 POPM 9003
+5 STDIN
+6 POPM 9001
+7 PUSHI 2
+8 POPM 9000
+9 LABEL
+10 PUSHM 9000
+11 LEQ
+12 PUSHM 9001
+13 JUMPZ 23
+14 PUSHM 9002
+15 PUSHM 9000
+16 ADD
+17 POPM 9002
+18 PUSHM 9000
+19 PUSHI 2
+20 ADD
+21 POPM 9000
+22 JUMP 9
+23 PUSHI 1
+24 POPM 9000
+25 LABEL
+26 PUSHM 9000
+27 LEQ
+28 PUSHM 9001
+29 JUMPZ 39
+30 PUSHM 9003
+31 PUSHM 9000
+32 ADD
+33 POPM 9003
+34 PUSHM 9000
+35 PUSHI 2
+36 ADD
+37 POPM 9000
+38 JUMP 25
+39 PUSHM 9002
+40 PUSHM 9003
+41 ADD
+42 STDOUT
+
+Symbol Table
+Identifier    MemoryLocation    Type
+i           9000               integer
+max           9001               integer
+sumEven           9002               integer
+sumOdd           9003               integer

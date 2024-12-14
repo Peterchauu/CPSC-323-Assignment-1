@@ -1,0 +1,19 @@
+
+Generated Assembly Code:
+1 PUSHI 10
+2 POPM 9000
+3 PUSHM 9000
+4 PUSHM 9000
+5 PUSHI 1
+6 ADD
+7 MUL
+8 PUSHI 2
+9 DIV
+10 POPM 9001
+11 PUSHM 9001
+12 STDOUT
+
+Symbol Table
+Identifier    MemoryLocation    Type
+max           9000               integer
+sum           9001               integer

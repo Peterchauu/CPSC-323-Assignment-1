@@ -1,0 +1,6 @@
+@
+integer max, sum; [* declarations *]
+max = 10;  [* Hardcoded input *]
+sum = (max * (max + 1)) / 2;
+put (sum);
+@
